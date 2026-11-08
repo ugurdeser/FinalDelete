@@ -14,7 +14,8 @@ internal sealed class DialogWatcher : IDisposable
     private const uint WINEVENT_OUTOFCONTEXT = 0x0000;
     private const uint WINEVENT_SKIPOWNPROCESS = 0x0002;
 
-    private static readonly string[] TitleKeywords = ["in use", "kullanım", "kullanim"];
+    // e.g. "File In Use", "Folder In Use", "Dosya Kullanılıyor", "Klasör Kullanımda"
+    private static readonly string[] TitleKeywords = ["in use", "kullanılıyor", "kullaniliyor", "kullanım", "kullanim"];
 
     private readonly NativeMethods.WinEventDelegate _callback; // keep alive: native code holds a pointer
     private readonly List<IntPtr> _hooks = [];
@@ -56,7 +57,10 @@ internal sealed class DialogWatcher : IDisposable
         // Exclude normal Explorer folder windows (their title is the folder name).
         string cls = NativeMethods.GetClass(hwnd);
         if (cls is "CabinetWClass" or "ExploreWClass") return false;
-        if (cls != "#32770" && NativeMethods.GetWindow(hwnd, NativeMethods.GW_OWNER) == IntPtr.Zero) return false;
+        // Windows 10/11 shows it as an unowned "OperationStatusWindow"; older versions use a #32770 dialog.
+        bool isDialog = cls is "OperationStatusWindow" or "#32770"
+            || NativeMethods.GetWindow(hwnd, NativeMethods.GW_OWNER) != IntPtr.Zero;
+        if (!isDialog) return false;
 
         NativeMethods.GetWindowThreadProcessId(hwnd, out uint pid);
         try
