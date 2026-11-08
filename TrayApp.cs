@@ -20,7 +20,7 @@ internal sealed class TrayApp : ApplicationContext
 
         _tray = new NotifyIcon
         {
-            Icon = SystemIcons.Shield,
+            Icon = AppIcon.Get(SystemInformation.SmallIconSize),
             Text = "File Lock Finder",
             ContextMenuStrip = BuildMenu(),
             Visible = true,
@@ -72,7 +72,7 @@ internal sealed class TrayApp : ApplicationContext
 
     private async void OnInUseDialog(IntPtr dialog)
     {
-        if (_busy) return;
+        if (_busy) { Log.Write("busy, skipped"); return; }
         _busy = true;
         try
         {
@@ -81,6 +81,8 @@ internal sealed class TrayApp : ApplicationContext
                 : null;
 
             var groups = ExplorerSelection.Collect(NativeMethods.GetWindow(dialog, NativeMethods.GW_OWNER));
+            Log.Write($"selection groups={groups.Count}: " +
+                string.Join(" | ", groups.Select(g => (g.Preferred ? "*" : "") + string.Join(";", g.Paths))));
             if (groups.Count == 0)
             {
                 _tray.ShowBalloonTip(3000, "File Lock Finder",
@@ -101,10 +103,12 @@ internal sealed class TrayApp : ApplicationContext
                 return (ordered[0].Paths, new List<LockingProcess>());
             });
 
+            Log.Write($"lockers={lockers.Count} for {string.Join(";", paths)}");
             ShowForm(paths, lockers, near);
         }
         catch (Exception ex)
         {
+            Log.Write("error: " + ex);
             _tray.ShowBalloonTip(3000, "File Lock Finder", Lang.T("Hata: ", "Error: ") + ex.Message, ToolTipIcon.Error);
         }
         finally { _busy = false; }

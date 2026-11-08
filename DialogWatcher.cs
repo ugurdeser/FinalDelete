@@ -32,18 +32,25 @@ internal sealed class DialogWatcher : IDisposable
                 WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
             if (hook != IntPtr.Zero) _hooks.Add(hook);
         }
+        Log.Write($"started, hooks={_hooks.Count}");
     }
 
     private void OnWinEvent(IntPtr hook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint thread, uint time)
     {
         if (hwnd == IntPtr.Zero || idObject != 0 || idChild != 0) return;
+
+        string cls = NativeMethods.GetClass(hwnd);
+        if (cls == "OperationStatusWindow")
+            Log.Write($"event 0x{eventType:X} hwnd={hwnd} title='{NativeMethods.GetText(hwnd)}'");
+
         if (!IsInUseDialog(hwnd)) return;
 
         // Each dialog is reported once.
         foreach (var stale in _handled.Keys.Where(h => !NativeMethods.IsWindow(h)).ToList())
             _handled.Remove(stale);
-        if (!_handled.TryAdd(hwnd, DateTime.UtcNow)) return;
+        if (!_handled.TryAdd(hwnd, DateTime.UtcNow)) { Log.Write($"duplicate hwnd={hwnd}"); return; }
 
+        Log.Write($"in-use dialog detected hwnd={hwnd}");
         InUseDialogShown?.Invoke(hwnd);
     }
 

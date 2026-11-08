@@ -1,3 +1,5 @@
+<p align="center"><img src="Assets/logo.png" width="128" alt="FileLockFinder logo"></p>
+
 # FileLockFinder
 
 [Türkçe](#türkçe) | [English](#english)

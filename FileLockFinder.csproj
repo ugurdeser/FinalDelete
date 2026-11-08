@@ -9,6 +9,11 @@
     <PlatformTarget>x64</PlatformTarget>
     <RootNamespace>FileLockFinder</RootNamespace>
     <AssemblyName>FileLockFinder</AssemblyName>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\app.ico" LogicalName="FileLockFinder.app.ico" />
+  </ItemGroup>
 
 </Project>

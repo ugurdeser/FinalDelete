@@ -28,7 +28,7 @@ internal sealed class ResultForm : Form
         StartPosition = FormStartPosition.Manual;
         Size = new Size(820, 300);
         MinimumSize = new Size(500, 200);
-        Icon = SystemIcons.Shield;
+        Icon = AppIcon.Get(SystemInformation.IconSize);
 
         _list.Columns.Add("Program", 170);
         _list.Columns.Add("PID", 60);
