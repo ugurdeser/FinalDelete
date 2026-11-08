@@ -17,8 +17,9 @@ internal static class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool UnhookWinEvent(IntPtr hWinEventHook);
 
+    // Unlike GetWindowText, this does not send WM_GETTEXT, so a hung window cannot block us.
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    private static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+    private static extern int InternalGetWindowText(IntPtr hWnd, StringBuilder text, int count);
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern int GetClassName(IntPtr hWnd, StringBuilder name, int count);
@@ -50,7 +51,7 @@ internal static class NativeMethods
     public static string GetText(IntPtr hWnd)
     {
         var sb = new StringBuilder(512);
-        GetWindowText(hWnd, sb, sb.Capacity);
+        InternalGetWindowText(hWnd, sb, sb.Capacity);
         return sb.ToString();
     }
 

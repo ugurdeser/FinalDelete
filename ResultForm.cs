@@ -155,8 +155,17 @@ internal sealed class ResultForm : Form
         {
             var paths = _paths;
             var lockers = await Task.Run(() => LockFinder.FindMany(paths));
+            if (IsDisposed) return; // window was closed (e.g. language changed) while searching
             ShowResults(paths, lockers, null);
         }
-        finally { UseWaitCursor = false; }
+        catch (Exception ex)
+        {
+            if (!IsDisposed)
+                MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            if (!IsDisposed) UseWaitCursor = false;
+        }
     }
 }

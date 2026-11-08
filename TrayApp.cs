@@ -126,8 +126,15 @@ internal sealed class TrayApp : ApplicationContext
 
     private async Task CheckPathsAsync(string[] paths)
     {
-        var lockers = await Task.Run(() => LockFinder.FindMany(paths));
-        ShowForm(paths, lockers, null);
+        try
+        {
+            var lockers = await Task.Run(() => LockFinder.FindMany(paths));
+            ShowForm(paths, lockers, null);
+        }
+        catch (Exception ex)
+        {
+            _tray.ShowBalloonTip(3000, "File Lock Finder", Lang.T("Hata: ", "Error: ") + ex.Message, ToolTipIcon.Error);
+        }
     }
 
     private void ShowForm(IReadOnlyList<string> paths, List<LockingProcess> lockers, Rectangle? near)
